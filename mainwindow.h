@@ -22,6 +22,8 @@ public slots:
     void ClickClearLogButton();
     void ClickInputCheckButton();
     void ClickNewCheckerButton();
+    void ClickCheckUnicomButton();
+    void ClickMinDistButton();
 private:
     Ui::MainWindow *ui;
     ftc::Checker<int, double>* Checker_id;

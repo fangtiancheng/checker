@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <queue>
 #include <vector>
 #include <utility>
 #include <algorithm>
@@ -72,13 +73,16 @@ namespace ftc {
 		WeightT run() const noexcept {
 			WeightT loss = (WeightT)0;
 			for (const auto& key_value : edges) {
-				auto& vct_edge = key_value.second;
+				// auto& vct_edge = key_value.second;
 				for (const auto& edge : key_value.second) {
 					if (node_to_base.at(edge.from) != node_to_base.at(edge.to))
 						loss += edge.weight;
 				}
 			}
 			return loss;
+		}
+		bool is_safe_ver(VerT ver) const{
+			return raw_node.find(ver) != raw_node.cend();
 		}
 	public:
         WeightT get_total_weight() const {
@@ -144,6 +148,7 @@ namespace ftc {
 							// e.print_edge();
 							(result1.first->second).push_back(e);
 						}
+						edges.insert(std::make_pair(to, std::vector<Edge<VerT,WeightT>>()));
 					}
 				}
 				else {
@@ -208,6 +213,59 @@ namespace ftc {
             max_base = 0;
             node_to_base.clear();
         }
+		bool unicom(VerT ver1, VerT ver2) const {
+		if(!is_safe_ver(ver1)||!is_safe_ver(ver2)){
+			throw Error(__LINE__,"Ver don't exist");
+		}
+        //std::cout << "check " << ver1 << " , " << ver2 << std::endl;
+		std::set<VerT> vis;
+		// bfs
+		std::queue<VerT> q;
+		q.push(ver1);
+		while(!q.empty()){
+			VerT tmp_ver = q.front(); q.pop();
+			if(tmp_ver == ver2) return true;
+			if(vis.find(tmp_ver) != vis.cend()) continue;
+			vis.insert(tmp_ver);
+            // std::cout << "tmp_ver = " << tmp_ver << std::endl;
+			for(auto edge_iter=edges.at(tmp_ver).cbegin();edge_iter!=edges.at(tmp_ver).cend();edge_iter++){
+				// 如果连的点没有vis，就丢入queue
+				if(vis.find(edge_iter->to) == vis.cend())
+					q.push(edge_iter->to);
+			}
+		}
+		return false;
+	}
+	WeightT min_dist(VerT u, VerT v) const {
+		if(!unicom(u, v)){
+			throw Error(__LINE__, "vers don't unicom");
+		}
+		const auto iter_u = edges.find(u);
+		const auto iter_v = edges.find(v);
+		if(iter_u==edges.cend()||iter_v==edges.cend()){
+			throw Error(__LINE__, "Node don't exist!");
+		}
+		// dijkstra
+		std::map<VerT, WeightT> dist;
+		std::queue<std::pair<VerT, WeightT> > q;
+		q.push(std::make_pair(u, (WeightT)0));
+		while(!q.empty()){
+			std::pair<VerT, WeightT> curr_node = q.front(); q.pop();
+			auto iter_dist = dist.find(curr_node.first);
+			if(iter_dist != dist.cend() && iter_dist->second < curr_node.second)
+				continue;
+			dist[curr_node.first] = curr_node.second;
+			for(auto edge_iter=edges.at(curr_node.first).cbegin();edge_iter!=edges.at(curr_node.first).cend();edge_iter++){
+			// for(Edge<VerT,WeightT>& edge: edges[curr_node.first]){
+				VerT to = edge_iter->to;
+				q.push(std::make_pair(to, curr_node.second + edge_iter->weight));
+			}
+		}
+		if(dist.find(v)==dist.cend()){
+			throw Error(__LINE__, "graph don't unicom");
+		}
+		else return dist[v];
+	}
 	};// end class Checker
 
 
