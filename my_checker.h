@@ -17,7 +17,7 @@ namespace ftc {
 	// OK 2020-12-12
 	inline bool is_num(char c) {
 		// 0~9 .
-		return (c >= '0' && c <= '9') || c == '.';
+		return (c >= '0' && c <= '9') || c == '.' || c == '-';
 	}
 	// OK 2020-12-12
 	inline bool is_word(char c) {

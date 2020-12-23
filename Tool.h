@@ -10,7 +10,7 @@ const int node_size_range=3000;
 const int edge_size_range=10000;
 const int edge_value_range=9999;
 
-enum WORKING_STATE{UNKNOWN = 0,RANDOM_MODE=1,APPEND_MODE,SINGALBLOCK_MODE,MULTIBLOCK_MODE};
+enum WORKING_STATE{UNKNOWN,RANDOM_MODE=1,APPEND_MODE,SINGALBLOCK_MODE,MULTIBLOCK_MODE};
 
 enum SEG_ALGORITHM{BruteForce_MODE=1,LouvainSA_MODE,Greedy_MODE,GreedyMKL_MODE};
 
@@ -28,6 +28,20 @@ struct v_edge
     int to,next;
     double w;
     int ty;
+};
+
+struct val
+{
+    int x,y;
+    double w;
+    val(int xx=0,int yy=0,double ww=0)
+    {
+        x=xx;y=yy;w=ww;
+    }
+    bool operator<(val x)const
+    {
+        return w<x.w;
+    }
 };
 }// end namespace zxh
 #endif

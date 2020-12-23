@@ -34,6 +34,6 @@ private:
     ftc::Checker<int, double>* Checker_id;
     ftc::Checker<std::string, double>* Checker_sd;
     enum VerType{UNKNOW,INT,STRING} vertype;
-    zxh::Graph_Generator graphGenerator;
+    zxh::Graph_Generator* graphGenerator;
 };
 #endif // MAINWINDOW_H

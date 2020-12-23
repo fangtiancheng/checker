@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.h": "cpp",
-        "xiosbase": "cpp"
+        "xiosbase": "cpp",
+        "utility": "cpp"
     }
 }

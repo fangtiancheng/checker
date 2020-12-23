@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->VerNumInput->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
     ui->EdgeNumInput->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
     ui->BlockNumInput->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
+    debug
+    graphGenerator = new zxh::Graph_Generator();
 }
 
 MainWindow::~MainWindow()
@@ -37,6 +39,10 @@ MainWindow::~MainWindow()
     if(this->Checker_sd!=NULL){
         delete this->Checker_sd;
         this->Checker_sd = NULL;
+    }
+    if(this->graphGenerator != NULL){
+        delete this->graphGenerator;
+        graphGenerator = NULL;
     }
 }
 
@@ -235,29 +241,38 @@ void MainWindow::ClickSelectPathButton(){
 void MainWindow::ClickGenerateButton(){
     QString filename = ui->InputLocation->toPlainText();
     zxh::WORKING_STATE wkstt = zxh::WORKING_STATE::UNKNOWN;
+    QString ModeLog;
     if(ui->AddModeButton->isChecked()){
         if(wkstt != zxh::WORKING_STATE::APPEND_MODE){
             wkstt = zxh::WORKING_STATE::APPEND_MODE;
-            ui->textBrowser->append(QString("choose Append Mode"));
+            // ui->textBrowser->append(QString("choose Append Mode"));
+            ModeLog += QString("Mode = Append; ");
         }
     }
     else if(ui->MultyConnectButton->isChecked()){
         if(wkstt != zxh::WORKING_STATE::MULTIBLOCK_MODE){
             wkstt = zxh::WORKING_STATE::MULTIBLOCK_MODE;
-            ui->textBrowser->append(QString("choose Multy Block Mode"));
+            // ui->textBrowser->append(QString("choose Multy Block Mode"));
+            ModeLog += QString("Mode = Multy Block; ");
         }
     }
     else if(ui->NormalModeButton->isChecked()){
         if(wkstt != zxh::WORKING_STATE::RANDOM_MODE){
             wkstt = zxh::WORKING_STATE::RANDOM_MODE;
-            ui->textBrowser->append(QString("choose Normal Mode"));
+            // ui->textBrowser->append(QString("choose Normal Mode"));
+            ModeLog += QString("Mode = Normal; ");
         }
     }
     else if(ui->OneConnectModeButton->isChecked()){
         if(wkstt != zxh::WORKING_STATE::SINGALBLOCK_MODE){
             wkstt = zxh::WORKING_STATE::SINGALBLOCK_MODE;
-            ui->textBrowser->append(QString("choose Single Block Mode"));
+            // ui->textBrowser->append(QString("choose Single Block Mode"));
+            ModeLog += QString("Mode = Single Block; ");
         }
+    }
+    else{
+        ui->textBrowser->append(QString("Havn't choose mode yet"));
+        return;
     }
     bool ok_n = true, ok_m = true, ok_b = true;
     int n = 0, m = 0, numOfBlock = 0;
@@ -270,8 +285,23 @@ void MainWindow::ClickGenerateButton(){
         ui->textBrowser->append(QString("input number error"));
         return;
     }
+    bool NoSelfLoop = ui->NoSelfLoopButton->isChecked();
+    bool NoMultyEdge = ui->NoMultyEdgeButton->isChecked();
+    if(NoSelfLoop){
+        ModeLog += QString("Self Loop = off; ");
+    }
+    else{
+        ModeLog += QString("Self Loop = on; ");
+    }
+    if(NoMultyEdge){
+        ModeLog += QString("Multy Edge = off; ");
+    }
+    else{
+        ModeLog += QString("Multy Edge = on; ");
+    }
     try{
-        graphGenerator.generate(wkstt, filename.toStdString().c_str(), n, m, numOfBlock);
+        graphGenerator->generate(wkstt, filename.toStdString().c_str(), n, m, numOfBlock,!NoSelfLoop, !NoMultyEdge);
+        ui->textBrowser->append(ModeLog);
         ui->textBrowser->append(QString("successfully generate a graph!"));
     }
     catch(ftc::Error e){
