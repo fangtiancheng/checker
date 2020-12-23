@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "my_checker.h"
 #define debug printf("in mw.cpp line %d\n",__LINE__);
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -18,6 +19,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->NewCheckerButton,SIGNAL(clicked()),this,SLOT(ClickNewCheckerButton()));
     connect(ui->CheckUnicomButton,SIGNAL(clicked()),this,SLOT(ClickCheckUnicomButton()));
     connect(ui->CheckMinDistButton,SIGNAL(clicked()),this,SLOT(ClickMinDistButton()));
+    connect(ui->SelectPathButton,SIGNAL(clicked()),this,SLOT(ClickSelectPathButton()));
+    connect(ui->GenerateButton,SIGNAL(clicked()),this,SLOT(ClickGenerateButton()));
+    connect(ui->ClearTextBrowserButton,SIGNAL(clicked()),this,SLOT(ClickClearTextBrowserButton()));
+    ui->VerNumInput->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
+    ui->EdgeNumInput->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
+    ui->BlockNumInput->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
 }
 
 MainWindow::~MainWindow()
@@ -219,5 +226,59 @@ void MainWindow::ClickMinDistButton(){
         ui->LogBrowser->append(QString("Ver Type Unknow!"));
         break;
     }
+}
+void MainWindow::ClickSelectPathButton(){
+    QString fileName = QFileDialog::getOpenFileName
+            (0, QString(), QString(),tr("*.*"));
+    ui->InputLocation->setText(fileName);
+}
+void MainWindow::ClickGenerateButton(){
+    QString filename = ui->InputLocation->toPlainText();
+    zxh::WORKING_STATE wkstt = zxh::WORKING_STATE::UNKNOWN;
+    if(ui->AddModeButton->isChecked()){
+        if(wkstt != zxh::WORKING_STATE::APPEND_MODE){
+            wkstt = zxh::WORKING_STATE::APPEND_MODE;
+            ui->textBrowser->append(QString("choose Append Mode"));
+        }
+    }
+    else if(ui->MultyConnectButton->isChecked()){
+        if(wkstt != zxh::WORKING_STATE::MULTIBLOCK_MODE){
+            wkstt = zxh::WORKING_STATE::MULTIBLOCK_MODE;
+            ui->textBrowser->append(QString("choose Multy Block Mode"));
+        }
+    }
+    else if(ui->NormalModeButton->isChecked()){
+        if(wkstt != zxh::WORKING_STATE::RANDOM_MODE){
+            wkstt = zxh::WORKING_STATE::RANDOM_MODE;
+            ui->textBrowser->append(QString("choose Normal Mode"));
+        }
+    }
+    else if(ui->OneConnectModeButton->isChecked()){
+        if(wkstt != zxh::WORKING_STATE::SINGALBLOCK_MODE){
+            wkstt = zxh::WORKING_STATE::SINGALBLOCK_MODE;
+            ui->textBrowser->append(QString("choose Single Block Mode"));
+        }
+    }
+    bool ok_n = true, ok_m = true, ok_b = true;
+    int n = 0, m = 0, numOfBlock = 0;
+    if(wkstt != zxh::WORKING_STATE::APPEND_MODE)
+        n = ui->VerNumInput->text().toInt(&ok_n);
+    m = ui->EdgeNumInput->text().toInt(&ok_m);
+    if(wkstt == zxh::WORKING_STATE::MULTIBLOCK_MODE)
+        numOfBlock = ui->BlockNumInput->text().toInt(&ok_b);
+    if(!ok_n||!ok_m||!ok_b){
+        ui->textBrowser->append(QString("input number error"));
+        return;
+    }
+    try{
+        graphGenerator.generate(wkstt, filename.toStdString().c_str(), n, m, numOfBlock);
+        ui->textBrowser->append(QString("successfully generate a graph!"));
+    }
+    catch(ftc::Error e){
+        ui->textBrowser->append(QString::fromStdString(e.message));
+    }
+}
+void MainWindow::ClickClearTextBrowserButton(){
+    ui->textBrowser->clear();
 }
 #undef debug

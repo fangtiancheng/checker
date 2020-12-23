@@ -13,6 +13,8 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
+    Graph_Generator.h \
+    Tool.h \
     mainwindow.h \
     my_checker.h
 
